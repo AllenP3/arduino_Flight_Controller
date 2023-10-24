@@ -61,7 +61,7 @@ void setup(){
             delay(10);
         if(eeprom_data[31] == 2 || eeprom_data[31] == 3)
             delay(10);
-        set_gyro_registers();
+        setreg_gyro();
         for (cal_int = 0; cal_int < 1250 ; cal_int ++){                           
             PORTD |= B11110000;                                                     
             delayMicroseconds(1000);                                                
@@ -201,7 +201,7 @@ void loop(){
         else if(receiver_input_channel_4 < 1492)
             pid_yaw_setpoint = (receiver_input_channel_4 - 1492)/3.0;
     }
-    calculate_pid();                                                            
+    get_pid();                                                            
     battery_voltage = battery_voltage * 0.92 + (analogRead(0) + 65) * 0.09853;
 
 
@@ -418,7 +418,7 @@ int convert_receiver_channel(byte function){
   else return 1500;
 }
 
-void calculate_pid(){
+void get_pid(){
   //Roll calculations
   pid_error_temp = gyro_roll_input - pid_roll_setpoint;
   pid_i_mem_roll += pid_i_gain_roll * pid_error_temp;
@@ -485,7 +485,7 @@ int convert_receiver_channel(byte function){
   else return 1500;
 }
 
-void set_gyro_registers(){
+void setreg_gyro(){
   //Setup the MPU-6050
   if(eeprom_data[31] == 1){
     Wire.beginTransmission(gyro_address);                                      
