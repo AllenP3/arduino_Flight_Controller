@@ -110,7 +110,7 @@ void setup(){
             }
         }
         start = 0; 
-        battery_voltage = (analogRead(0) + 65) * 1.2317;
+        battery_voltage = (analogRead(0) + 65) * 1.6422;
         loop_timer = micros();
         digitalWrite(12,LOW);
 
@@ -202,7 +202,7 @@ void loop(){
             pid_yaw_setpoint = (receiver_input_channel_4 - 1492)/3.0;
     }
     calculate_pid();                                                            
-    battery_voltage = battery_voltage * 0.92 + (analogRead(0) + 65) * 0.09853;
+    battery_voltage = battery_voltage * 0.92 + (analogRead(0) + 65) * 0.13138;
 
 
     if(battery_voltage < 1000 && battery_voltage > 600)digitalWrite(12, HIGH);
