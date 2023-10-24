@@ -57,7 +57,7 @@ void setup(){
         DDRB |= B00110000;  //12, 13
         digitalWrite(12,HIGH);   
         
-        while(eeprom_data[33] != 'A' || eeprom_data[34] != 'B' || eeprom_data[35] != 'D')
+        while(eeprom_data[33] != 'J' || eeprom_data[34] != 'M' || eeprom_data[35] != 'B')
             delay(10);
         if(eeprom_data[31] == 2 || eeprom_data[31] == 3)
             delay(10);
@@ -105,14 +105,14 @@ void setup(){
             PORTD &= B00001111;                                                    //Set digital poort 4, 5, 6 and 7 low.
             delay(3);                                                               
             if(start == 125){                                                       
-            digitalWrite(12, !digitalRead(12));                                   //Change the led status.
+            digitalWrite(13, !digitalRead(13));                                   //Change the led status.
             start = 0;                                                            //Start again at 0.
             }
         }
         start = 0; 
         battery_voltage = (analogRead(0) + 65) * 1.6422;
         loop_timer = micros();
-        digitalWrite(12,LOW);
+        digitalWrite(13,LOW);
 
 }
 
@@ -205,7 +205,7 @@ void loop(){
     battery_voltage = battery_voltage * 0.92 + (analogRead(0) + 65) * 0.13138;
 
 
-    if(battery_voltage < 1000 && battery_voltage > 600)digitalWrite(12, HIGH);
+    if(battery_voltage < 1000 && battery_voltage > 600)digitalWrite(13, HIGH);
 
 
     throttle = receiver_input_channel_3;                                     
@@ -252,7 +252,7 @@ void loop(){
     }
 
  
-    if(micros() - loop_timer > 4050)digitalWrite(12, HIGH);                   
+    if(micros() - loop_timer > 4050)digitalWrite(13, HIGH);                   
   
   
     while(micros() - loop_timer < 4000);                                     
