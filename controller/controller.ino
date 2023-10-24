@@ -347,19 +347,99 @@ ISR(PCINT0_vect){
     }
 }*/
 
+void gyro_signalen(){
+  //Read the MPU-6050
+  if(eeprom_data[31] == 1){
+    Wire.beginTransmission(gyro_address);                                   
+    Wire.write(0x3B);                                                       
+    Wire.endTransmission();                                                 
+    Wire.requestFrom(gyro_address,14);                                      
+    
+    receiver_input_channel_1 = convert_receiver_channel(1);                 
+    receiver_input_channel_2 = convert_receiver_channel(2);                 
+    receiver_input_channel_3 = convert_receiver_channel(3);                 
+    receiver_input_channel_4 = convert_receiver_channel(4);                
+    
+    while(Wire.available() < 14);                                           
+    acc_axis[1] = Wire.read()<<8|Wire.read();                               
+    acc_axis[2] = Wire.read()<<8|Wire.read();                               
+    acc_axis[3] = Wire.read()<<8|Wire.read();                               
+    temperature = Wire.read()<<8|Wire.read();                               
+    gyro_axis[1] = Wire.read()<<8|Wire.read();                              
+    gyro_axis[2] = Wire.read()<<8|Wire.read();                              
+    gyro_axis[3] = Wire.read()<<8|Wire.read();                              
+  }
+
+  if(cal_int == 2000){
+    gyro_axis[1] -= gyro_axis_cal[1];                                       
+    gyro_axis[2] -= gyro_axis_cal[2];                                       
+    gyro_axis[3] -= gyro_axis_cal[3];                                       
+  }
+  gyro_roll = gyro_axis[eeprom_data[28] & 0b00000011];                      
+  if(eeprom_data[28] & 0b10000000)gyro_roll *= -1;                          
+  gyro_pitch = gyro_axis[eeprom_data[29] & 0b00000011];                     
+  if(eeprom_data[29] & 0b10000000)gyro_pitch *= -1;                         
+  gyro_yaw = gyro_axis[eeprom_data[30] & 0b00000011];                       
+  if(eeprom_data[30] & 0b10000000)gyro_yaw *= -1;                           
+
+  acc_x = acc_axis[eeprom_data[29] & 0b00000011];                           
+  if(eeprom_data[29] & 0b10000000)acc_x *= -1;                              
+  acc_y = acc_axis[eeprom_data[28] & 0b00000011];                          
+  if(eeprom_data[28] & 0b10000000)acc_y *= -1;                             
+  acc_z = acc_axis[eeprom_data[30] & 0b00000011];                           
+  if(eeprom_data[30] & 0b10000000)acc_z *= -1;                              
+}
+
+void calculate_pid(){
+  //Roll calculations
+  pid_error_temp = gyro_roll_input - pid_roll_setpoint;
+  pid_i_mem_roll += pid_i_gain_roll * pid_error_temp;
+  if(pid_i_mem_roll > pid_max_roll)pid_i_mem_roll = pid_max_roll;
+  else if(pid_i_mem_roll < pid_max_roll * -1)pid_i_mem_roll = pid_max_roll * -1;
+
+  pid_output_roll = pid_p_gain_roll * pid_error_temp + pid_i_mem_roll + pid_d_gain_roll * (pid_error_temp - pid_last_roll_d_error);
+  if(pid_output_roll > pid_max_roll)pid_output_roll = pid_max_roll;
+  else if(pid_output_roll < pid_max_roll * -1)pid_output_roll = pid_max_roll * -1;
+
+  pid_last_roll_d_error = pid_error_temp;
+
+  //Pitch calculations
+  pid_error_temp = gyro_pitch_input - pid_pitch_setpoint;
+  pid_i_mem_pitch += pid_i_gain_pitch * pid_error_temp;
+  if(pid_i_mem_pitch > pid_max_pitch)pid_i_mem_pitch = pid_max_pitch;
+  else if(pid_i_mem_pitch < pid_max_pitch * -1)pid_i_mem_pitch = pid_max_pitch * -1;
+
+  pid_output_pitch = pid_p_gain_pitch * pid_error_temp + pid_i_mem_pitch + pid_d_gain_pitch * (pid_error_temp - pid_last_pitch_d_error);
+  if(pid_output_pitch > pid_max_pitch)pid_output_pitch = pid_max_pitch;
+  else if(pid_output_pitch < pid_max_pitch * -1)pid_output_pitch = pid_max_pitch * -1;
+
+  pid_last_pitch_d_error = pid_error_temp;
+
+  //Yaw calculations
+  pid_error_temp = gyro_yaw_input - pid_yaw_setpoint;
+  pid_i_mem_yaw += pid_i_gain_yaw * pid_error_temp;
+  if(pid_i_mem_yaw > pid_max_yaw)pid_i_mem_yaw = pid_max_yaw;
+  else if(pid_i_mem_yaw < pid_max_yaw * -1)pid_i_mem_yaw = pid_max_yaw * -1;
+
+  pid_output_yaw = pid_p_gain_yaw * pid_error_temp + pid_i_mem_yaw + pid_d_gain_yaw * (pid_error_temp - pid_last_yaw_d_error);
+  if(pid_output_yaw > pid_max_yaw)pid_output_yaw = pid_max_yaw;
+  else if(pid_output_yaw < pid_max_yaw * -1)pid_output_yaw = pid_max_yaw * -1;
+
+  pid_last_yaw_d_error = pid_error_temp;
+}
 
 int convert_receiver_channel(byte function){
-  byte channel, reverse;                                                      
+  byte channel, reverse;                                                       
   int low, center, high, actual;
   int difference;
 
-  //channel = eeprom_data[function + 23] & 0b00000111;                           
-  //if(eeprom_data[function + 23] & 0b10000000)reverse = 1;                     
-  //else reverse = 0;                                                            
+  channel = eeprom_data[function + 23] & 0b00000111;                           
+  if(eeprom_data[function + 23] & 0b10000000)reverse = 1;                      
+  else reverse = 0;                                                            
 
   actual = receiver_input[channel];                                            
-  low = (eeprom_data[channel * 2 + 15] << 8) | eeprom_data[channel * 2 + 14]; 
-  center = (eeprom_data[channel * 2 - 1] << 8) | eeprom_data[channel * 2 - 2];
+  low = (eeprom_data[channel * 2 + 15] << 8) | eeprom_data[channel * 2 + 14];  
+  center = (eeprom_data[channel * 2 - 1] << 8) | eeprom_data[channel * 2 - 2]; 
   high = (eeprom_data[channel * 2 + 7] << 8) | eeprom_data[channel * 2 + 6];   
 
   if(actual < center){                                                         
@@ -372,7 +452,7 @@ int convert_receiver_channel(byte function){
     if(actual > high)actual = high;                                            
     difference = ((long)(actual - center) * (long)500) / (high - center);      
     if(reverse == 1)return 1500 - difference;                                  
-    else return 1500 + difference;                                             
+    else return 1500 + difference;                                            
   }
   else return 1500;
 }
