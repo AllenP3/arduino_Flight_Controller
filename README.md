@@ -7,6 +7,11 @@
  
  - [ ] Interface Flight controller with SoC for further Autonomous tasks
 
+#
+## Brushless Motor Thrust Calculation
+* Tensometric Beam with HX711 read using Arduino
+* Adapters, Stand were 3D printed
+
 
 
 
