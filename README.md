@@ -7,6 +7,11 @@
  
  - [ ] Interface Flight controller with SoC for further Autonomous tasks
 
+#
+## <a href="https://github.com/AllenP3/arduino_Flight_Controller/tree/main/thrust_calculation" target="_blank">Brushless Motor Thrust Calculation</a>
+* Tensometric Beam with <a href="https://cdn.sparkfun.com/datasheets/Sensors/ForceFlex/hx711_english.pdf" target="_blank"> HX711 </a> read using Arduino
+* Adapters, Stand were 3D printed
+
 
 
 
