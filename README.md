@@ -6,9 +6,14 @@
  - [ ] Fix latency using Arduino Uno R4  
  
  - [ ] Interface Flight controller with SoC for further Autonomous tasks
-
 #
-## <a href="https://github.com/AllenP3/arduino_Flight_Controller/tree/main/thrust_calculation" target="_blank">Brushless Motor Thrust Calculation</a>
+### Parts Used
+* 4S Lipo : 3300mAh, 50C
+* Brushless Outrunner : A2212/13T 1000Kv X 4 (with 30A ESC per motor)
+* Arduino Uno R4, R3
+* Flysky iA6B
+#
+### <a href="https://github.com/AllenP3/arduino_Flight_Controller/tree/main/thrust_calculation" target="_blank">Brushless Motor Thrust Calculation</a>
 * Tensometric Beam with <a href="https://cdn.sparkfun.com/datasheets/Sensors/ForceFlex/hx711_english.pdf" target="_blank"> HX711 </a> read using Arduino
 * Adapters, Stand were 3D printed
 
